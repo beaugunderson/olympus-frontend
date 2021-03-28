@@ -36,6 +36,25 @@ if (ethereum) {
   });
 }
 
+const EPOCH_INTERVAL = 2200;
+
+// NOTE could get this from an outside source since it changes slightly over time
+const BLOCK_RATE_SECONDS = 13.14;
+
+async function getNextEpoch(): Promise<[number, number, number]> {
+  const height = await provider.getBlockNumber();
+
+  if (height % EPOCH_INTERVAL === 0) {
+    return [0, 0, 0]
+  }
+
+  const next = (height + EPOCH_INTERVAL) - (height % EPOCH_INTERVAL);
+  const blocksAway = next - height;
+  const secondsAway = blocksAway * BLOCK_RATE_SECONDS;
+
+  return [next, blocksAway, secondsAway];
+}
+
 const state = {  
   approval: 0,
   loading: false,
@@ -62,7 +81,10 @@ const state = {
   allotment: 0,
   maxPurchase: 0,
   maxSwap: 0,
-  amountSwap: 0
+  amountSwap: 0,
+  epochBlock: null,
+  epochBlocksAway: null,
+  epochSecondsAway: null,
 };
 
 const mutations = {
@@ -197,6 +219,8 @@ const actions = {
         console.log("Allowance", allowance);
         console.log("stakeAllowance", stakeAllowance);
 
+        const [epochBlock, epochBlocksAway, epochSecondsAway] = await getNextEpoch();
+
         commit('set', { address });
         commit('set', {
           // name,
@@ -215,7 +239,10 @@ const actions = {
           stakingAPY: stakingAPY,
           stakingRebase: stakingRebase,
           currentIndex: ethers.utils.formatUnits(currentIndex, 'gwei'),
-        });        
+          epochBlock,
+          epochBlocksAway,
+          epochSecondsAway,
+        });
         commit('set', { allowance, stakeAllowance, unstakeAllowance, lpStakeAllowance });
         dispatch('getAllotmentPerBuyer');
       } catch (error) {
@@ -440,7 +467,6 @@ const actions = {
     const migrateTx = await migrateContact.migrate( value * 1000000000 );
     await migrateTx.wait();
   },
-
 };
 
 export default {
