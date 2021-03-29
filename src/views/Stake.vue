@@ -84,8 +84,22 @@
                 </div>
 
                 <div class="stake-price-data-row">
+                  <p class="price-label">% of supply</p>
+                  <p class="price-data">
+                    {{ trim($store.state.settings.percentOfCirculatingOhmSupply, 4) }}%
+                  </p>
+                </div>
+
+                <div class="stake-price-data-row">
                   <p class="price-label">Staked</p>
                   <p class="price-data">{{ trim($store.state.settings.sohmBalance, 4) }} OHM</p>
+                </div>
+
+                <div class="stake-price-data-row">
+                  <p class="price-label">% of supply</p>
+                  <p class="price-data">
+                    {{ trim($store.state.settings.percentOfCirculatingSOhmSupply, 4) }}%
+                  </p>
                 </div>
 
                 <div class="stake-price-data-row">
